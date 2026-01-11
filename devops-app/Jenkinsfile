@@ -35,4 +35,8 @@ pipeline {
             echo '❌ Build ou tests échoués'
         }
     }
+
 }
+
+
+
