@@ -53,38 +53,50 @@ pipeline {
 }
 pipeline {
     agent any
-    tools { maven 'Maven-3' }
+
+    tools {
+        maven 'Maven-3' 
+    }
+
     stages {
-        stage('Checkout & Build') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
             steps {
                 dir('devops-app') {
-                    bat 'mvn clean compile' 
+                    bat 'mvn clean test'
                 }
             }
         }
-        stage('Test') {
-            steps {
-                dir('devops-app') {
-                    bat 'mvn test'
-                }
-            }
-        }
+
         stage('Archive') {
             steps {
                 dir('devops-app') {
                     bat 'mvn package -DskipTests'
+                    // Archive le JAR pour la partie 'Déploiement' (Étape 35)
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
             }
         }
+
+        stage('Notify Slack') {
+            steps {
+                // Étape 38 : Notification Slack (Simulation par echo)
+                echo '✅ Notification : Le pipeline a atteint l étape finale.'
+            }
+        }
     }
+
     post {
         success {
-            // Étape 38 : Notification Slack (Simulée ici, ou utilisez le plugin slackSend)
-            echo '✅ Succès : Notification envoyée à Slack'
+            echo '✅ Intégration continue réussie !'
         }
         failure {
-            echo '❌ Échec : Notification envoyée à Slack'
+            echo '❌ Échec du pipeline'
         }
     }
 }
