@@ -2,23 +2,22 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3'
+        maven 'Maven-3' // Doit correspondre au nom dans Jenkins > Global Tool Configuration [cite: 32]
     }
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                // Use 'dir' to move into the folder containing pom.xml
-                dir('devops-app') {
-                    bat 'mvn clean compile'
-                }
+                // Récupère le code depuis GitHub [cite: 33]
+                checkout scm
             }
         }
 
-        stage('Test') {
+        stage('Build & Test') {
             steps {
                 dir('devops-app') {
-                    bat 'mvn test'
+                    // Nettoie, compile et lance les tests unitaires [cite: 33]
+                    bat 'mvn clean test'
                 }
             }
         }
@@ -26,20 +25,29 @@ pipeline {
         stage('Archive') {
             steps {
                 dir('devops-app') {
+                    // Crée le fichier .jar et l'archive dans Jenkins 
                     bat 'mvn package -DskipTests'
-                    // Updated path to find the jar within the current dir
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
+            }
+        }
+
+        stage('Notify Slack') {
+            steps {
+                // Notification Slack (Étape 3.4 du projet) 
+                // Note : Nécessite le plugin 'Slack Notification'
+                echo 'Envoi de la notification Slack...'
+                // slackSend channel: '#votre-canal', message: "Build réussi : ${env.JOB_NAME}"
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build et tests réussis'
+            echo '✅ Intégration continue réussie !' [cite: 46]
         }
         failure {
-            echo '❌ Build ou tests échoués'
+            echo '❌ Échec du pipeline' [cite: 56]
         }
     }
 }
