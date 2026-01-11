@@ -51,3 +51,40 @@ pipeline {
         }
     }
 }
+pipeline {
+    agent any
+    tools { maven 'Maven-3' }
+    stages {
+        stage('Checkout & Build') {
+            steps {
+                dir('devops-app') {
+                    bat 'mvn clean compile' 
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('devops-app') {
+                    bat 'mvn test'
+                }
+            }
+        }
+        stage('Archive') {
+            steps {
+                dir('devops-app') {
+                    bat 'mvn package -DskipTests'
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+    }
+    post {
+        success {
+            // Étape 38 : Notification Slack (Simulée ici, ou utilisez le plugin slackSend)
+            echo '✅ Succès : Notification envoyée à Slack'
+        }
+        failure {
+            echo '❌ Échec : Notification envoyée à Slack'
+        }
+    }
+}
