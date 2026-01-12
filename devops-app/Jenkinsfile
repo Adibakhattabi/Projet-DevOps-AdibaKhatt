@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3' // Doit correspondre au nom dans Jenkins > Global Tool Configuration [cite: 32]
+        maven 'Maven-3' 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Récupère le code depuis GitHub [cite: 33]
+                // Récupère le code depuis GitHub (Étape 2.1) [cite: 28, 33]
                 checkout scm
             }
         }
@@ -16,7 +16,7 @@ pipeline {
         stage('Build & Test') {
             steps {
                 dir('devops-app') {
-                    // Nettoie, compile et lance les tests unitaires [cite: 33]
+                    // Nettoie, compile et lance les tests (Étape 2.2) [cite: 32, 33]
                     bat 'mvn clean test'
                 }
             }
@@ -25,7 +25,7 @@ pipeline {
         stage('Archive') {
             steps {
                 dir('devops-app') {
-                    // Crée le fichier .jar et l'archive dans Jenkins 
+                    // Crée le JAR et l'archive (Étape 3.2 & 3.5) [cite: 31, 35]
                     bat 'mvn package -DskipTests'
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
@@ -34,10 +34,8 @@ pipeline {
 
         stage('Notify Slack') {
             steps {
-                // Notification Slack (Étape 3.4 du projet) 
-                // Note : Nécessite le plugin 'Slack Notification'
-                echo 'Envoi de la notification Slack...'
-                // slackSend channel: '#votre-canal', message: "Build réussi : ${env.JOB_NAME}"
+                // Simulation de la notification Slack (Étape 4) [cite: 38]
+                echo '✅ Notification : Le pipeline est terminé avec succès.'
             }
         }
     }
@@ -48,55 +46,6 @@ pipeline {
         }
         failure {
             echo '❌ Échec du pipeline' [cite: 56]
-        }
-    }
-}
-pipeline {
-    agent any
-
-    tools {
-        maven 'Maven-3' 
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build & Test') {
-            steps {
-                dir('devops-app') {
-                    bat 'mvn clean test'
-                }
-            }
-        }
-
-        stage('Archive') {
-            steps {
-                dir('devops-app') {
-                    bat 'mvn package -DskipTests'
-                    // Archive le JAR pour la partie 'Déploiement' (Étape 35)
-                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-                }
-            }
-        }
-
-        stage('Notify Slack') {
-            steps {
-                // Étape 38 : Notification Slack (Simulation par echo)
-                echo '✅ Notification : Le pipeline a atteint l étape finale.'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Intégration continue réussie !'
-        }
-        failure {
-            echo '❌ Échec du pipeline'
         }
     }
 }
